@@ -130,9 +130,9 @@ def test():
     transform = config.test_transforms
 
     dataset = YOLODataset(
-        "COCO/train.csv",
-        "COCO/images/images/",
-        "COCO/labels/labels_new/",
+        "COCO/2examples.csv",
+        "COCO/images/",
+        "COCO/labels/",
         S=[13, 26, 52],
         anchors=anchors,
         transform=transform,
@@ -155,7 +155,6 @@ def test():
         boxes = nms(boxes, iou_threshold=1, threshold=0.7, box_format="midpoint")
         print(boxes)
         plot_image(x[0].permute(1, 2, 0).to("cpu"), boxes)
-
 
 if __name__ == "__main__":
     test()
