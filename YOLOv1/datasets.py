@@ -9,6 +9,9 @@ import matplotlib.patches as patches
 from metrics import non_max_suppression
 
 class VOCDataset(torch.utils.data.Dataset):
+    """
+    dataset for the VOC dataset, output will be (s, s, self.C + self.B * 5)
+    """
     def __init__(
         self, csv_file, img_dir, label_dir, S=7, B=2, C=20, transform=None,
     ):
@@ -67,7 +70,19 @@ class VOCDataset(torch.utils.data.Dataset):
                 label_matrix[i, j, 20] = 1
             
         return image, label_matrix
-    
+
+class Compose(object):
+    """
+    transofmer the image 
+    """
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, img, bboxes):
+        for t in self.transforms:
+            img, bboxes = t(img), bboxes
+        return img, bboxes
+
 def plot_image(image, boxes):
     """Plots predicted bounding boxes on the image"""
     im = np.array(image)
@@ -87,6 +102,7 @@ def plot_image(image, boxes):
         assert len(box) == 4, "Got more values than in x, y, w, h, in a box!"
         upper_left_x = box[0] - box[2] / 2
         upper_left_y = box[1] - box[3] / 2
+        # Create a Rectangle patch
         rect = patches.Rectangle(
             (upper_left_x * width, upper_left_y * height),
             box[2] * width,

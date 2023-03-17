@@ -1,31 +1,11 @@
 import torch
 import torch.nn as nn
-
-# tuple is structured by (kernel_size, filters, stride, padding)
-# "M" is maxpooling with stride 2 and kernel size 2
-architecture_config = [
-    (7, 64, 2, 3),
-    "M",
-    (3, 192, 1, 1),
-    "M",
-    (1, 128, 1, 0),
-    (3, 256, 1, 1),
-    (1, 256, 1, 0),
-    (3, 512, 1, 1),
-    "M",
-    # list is structured by [(kernel_size, filters, stride, padding), (kernel_size, filters, stride, padding), number of repeats]
-    [(1, 256, 1, 0), (3, 512, 1, 1), 4],
-    (1, 512, 1, 0),
-    (3, 1024, 1, 1),
-    "M",
-    [(1, 512, 1, 0), (3, 1024, 1, 1), 2],
-    (3, 1024, 1, 1),
-    (3, 1024, 2, 1),
-    (3, 1024, 1, 1),
-    (3, 1024, 1, 1),
-]
+import config
 
 class CNNBlock(nn.Module):
+    """
+    CNN Block for yolov1
+    """
     def __init__(self, in_channels, out_channels, **kwargs):
         super(CNNBlock, self).__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, bias=False, **kwargs)
@@ -36,9 +16,12 @@ class CNNBlock(nn.Module):
         return self.leaky_relu(self.batchnorm(self.conv(x)))
 
 class YOLOv1(nn.Module):
+    """
+    YOLOv1 model
+    """
     def __init__(self, in_channels=3, **kwargs):
         super(YOLOv1, self).__init__()
-        self.architecture = architecture_config
+        self.architecture = config.architecture_config
         self.in_channels = in_channels
         self.darknet = self._create_conv_layers(self.architecture)
         self.fcs = self._create_fcs(**kwargs)
@@ -55,11 +38,7 @@ class YOLOv1(nn.Module):
             if type(x) == tuple:
                 layers += [
                     CNNBlock(
-                        in_channels,
-                        x[1],
-                        kernel_size=x[0],
-                        stride=x[2],
-                        padding=x[3],
+                        in_channels, x[1], kernel_size=x[0], stride=x[2], padding=x[3],
                     )
                 ]
                 in_channels = x[1]
@@ -73,20 +52,12 @@ class YOLOv1(nn.Module):
                 for _ in range(num_repeats):
                     layers += [
                         CNNBlock(
-                            in_channels,
-                            conv1[1],
-                            kernel_size=conv1[0],
-                            stride=conv1[2],
-                            padding=conv1[3],
+                            in_channels, conv1[1], kernel_size=conv1[0], stride=conv1[2], padding=conv1[3],
                         )
                     ]
                     layers += [
                         CNNBlock(
-                            conv1[1],
-                            conv2[1],
-                            kernel_size=conv2[0],
-                            stride=conv2[2],
-                            padding=conv2[3],
+                            conv1[1], conv2[1], kernel_size=conv2[0], stride=conv2[2], padding=conv2[3],
                         )
                     ]
                     in_channels = conv2[1]
