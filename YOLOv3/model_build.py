@@ -1,42 +1,11 @@
 import torch
 import torch.nn as nn
-
-""" 
-Information about architecture config:
-Tuple is structured by (filters, kernel_size, stride) 
-Every conv is a same convolution. 
-List is structured by "B" indicating a residual block (conv + conv + residual) followed by the number of repeats
-"S" is for scale prediction block and computing the yolo loss
-"U" is for upsampling the feature map and concatenating with a previous layer
-"""
-config = [
-    (32, 3, 1),
-    (64, 3, 2),
-    ["B", 1],
-    (128, 3, 2),
-    ["B", 2],
-    (256, 3, 2),
-    ["B", 8],
-    (512, 3, 2),
-    ["B", 8],
-    (1024, 3, 2),
-    ["B", 4],  # To this point is Darknet-53
-    (512, 1, 1),
-    (1024, 3, 1),
-    "S", # Scale prediction block 13*13
-    (256, 1, 1),
-    "U",
-    (256, 1, 1),
-    (512, 3, 1),
-    "S", # Scale prediction block 26*26
-    (128, 1, 1),
-    "U",
-    (128, 1, 1),
-    (256, 3, 1),
-    "S", # Scale prediction block 52*52
-]
+import config
 
 class CNNBlock(nn.Module):
+    """
+    CNN Block
+    """
     def __init__(self, in_channels, out_channels, bn_act=True, **kwargs):
         super().__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, bias=not bn_act, **kwargs)
@@ -51,6 +20,9 @@ class CNNBlock(nn.Module):
             return self.conv(x)
 
 class ResidualBlock(nn.Module):
+    """
+    Residual Block
+    """
     def __init__(self, channels, use_residual=True, num_repeats=1):
         super().__init__()
         self.layers = nn.ModuleList()
@@ -70,6 +42,10 @@ class ResidualBlock(nn.Module):
         return x
 
 class ScalePrediction(nn.Module):
+    """
+    The output branch for different scales prediction
+    output = (samples, anchors, grid, grid, classes + 5)
+    """
     def __init__(self, in_channels, num_classes):
         super().__init__()
         # cells = 3 * (num_classes + 5), 3 is the number of anchor boxes, 5 is (objectness, x, y, w, h)
@@ -86,7 +62,11 @@ class ScalePrediction(nn.Module):
             self.pred(x).reshape(x.shape[0], 3, self.num_classes + 5, x.shape[2], x.shape[3])
             .permute(0, 1, 3, 4, 2)
         )
+    
 class YOLOv3(nn.Module):
+    """
+    YOLOv3 model
+    """
     def __init__(self, in_channels=3, num_classes=80):
         super().__init__()
         self.num_classes = num_classes
@@ -96,6 +76,7 @@ class YOLOv3(nn.Module):
     def forward(self, x):
         outputs = []
         route_connections = []
+        # loop through the layers for the scale prediction and the residual blocks for upsampling
         for layer in self.layers:
             # if the layer is scale prediction, append the output to the outputs list
             # and continue to the next iteration, since the scale prediction layer is the branch of the network
@@ -118,7 +99,7 @@ class YOLOv3(nn.Module):
         layers = nn.ModuleList()
         in_channels = self.in_channels
 
-        for module in config:
+        for module in config.model_architecture:
             if isinstance(module, tuple):
                 out_channels, kernel_size, stride = module
                 layers.append(
@@ -143,7 +124,7 @@ class YOLOv3(nn.Module):
         
         return layers
 
-if __name__ == "__main__":
+def test():
     num_classes = 20
     IMAGE_SIZE = 416 # yolo v1 is 448, yolo v3 is 416
     model = YOLOv3(num_classes=num_classes)
@@ -155,3 +136,5 @@ if __name__ == "__main__":
     assert model(x)[2].shape == (2, 3, IMAGE_SIZE//8, IMAGE_SIZE//8, num_classes + 5)
     print("Success!")
 
+if __name__ == "__main__":
+    test()

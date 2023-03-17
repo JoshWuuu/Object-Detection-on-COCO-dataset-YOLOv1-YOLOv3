@@ -26,6 +26,41 @@ CHECKPOINT_FILE = "checkpoint.pth.tar"
 IMG_DIR = DATASET + "/images/"
 LABEL_DIR = DATASET + "/labels/"
 
+""" 
+Information about architecture config:
+Tuple is structured by (filters, kernel_size, stride) 
+Every conv is a same convolution. 
+List is structured by "B" indicating a residual block (conv + conv + residual) followed by the number of repeats
+"S" is for scale prediction block and computing the yolo loss
+"U" is for upsampling the feature map and concatenating with a previous layer
+"""
+model_architecture = [
+    (32, 3, 1),
+    (64, 3, 2),
+    ["B", 1],
+    (128, 3, 2),
+    ["B", 2],
+    (256, 3, 2),
+    ["B", 8],
+    (512, 3, 2),
+    ["B", 8],
+    (1024, 3, 2),
+    ["B", 4],  # To this point is Darknet-53
+    (512, 1, 1),
+    (1024, 3, 1),
+    "S", # Scale prediction block 13*13
+    (256, 1, 1),
+    "U",
+    (256, 1, 1),
+    (512, 3, 1),
+    "S", # Scale prediction block 26*26
+    (128, 1, 1),
+    "U",
+    (128, 1, 1),
+    (256, 3, 1),
+    "S", # Scale prediction block 52*52
+]
+
 ANCHORS = [
     [(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)],
     [(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)],
