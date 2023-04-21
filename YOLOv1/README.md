@@ -25,3 +25,6 @@ $$+ \lambda_{noobj} \sum_{i=0}^{S^2} \sum_{j=0}^{B} 1_{ij}^{noobj}\Big(C_i - \ov
 
 $$+ \sum_{i=0}^{S^2} 1_{i}^{obj} \sum_{c \in classes} \Big(p_i(c) - \overline{p_i}(c)\Big)^2 $$
 
+## Reference
+* https://github.com/aladdinpersson/Machine-Learning-Collection
+
