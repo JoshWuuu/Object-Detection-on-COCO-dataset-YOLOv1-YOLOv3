@@ -1,7 +1,7 @@
 ## Summary
 It is a side project in 2023. The project is a Computer Vision topic. The languages and relevent packages are **Python - Pytorch**. The repo built the Yolov3 to detect the defects in SEM images. 
 ## Data
-PASCAL VOC, (source)[http://host.robots.ox.ac.uk/pascal/VOC/]
+PASCAL VOC, [source](http://host.robots.ox.ac.uk/pascal/VOC/)
 ## Network
 YoLov3. The network output three scale predictions (IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8). Each prediction is a grid prediction. The cell in the grid has 3 * (num_classes + 5) outputs, 3 is the number of anchor boxes, 5 is (objectness, x, y, w, h). The anchor box is predined using the images in ImageNet.
 <figure>
