@@ -9,7 +9,7 @@ YoLov1. The network is a convolutional network. The prediction is a grid predict
   <img 
   src="yolov1_structure.png" 
   alt="Results of sklearn models" 
-  width="700" height="400">
+  width="700" height="300">
 </figure>
 
 ## Loss
